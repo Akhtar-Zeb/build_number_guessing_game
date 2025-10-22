@@ -1,31 +1,31 @@
 #!/bin/bash
+
 PSQL="psql --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
-# Set Secret number
+# Generate random number between 1 and 1000
 SECRET_NUMBER=$(( RANDOM % 1000 + 1 ))
-echo $SECRET_NUMBER
 
-# Get user name
+# Get username
 echo "Enter your username:"
 read USERNAME
 
+# Check if user exists
 USER_ID=$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME'")
 
-# check if user is in db
 if [[ -z $USER_ID ]]
 then
+  # New user
   echo "Welcome, $USERNAME! It looks like this is your first time here."
-  # insert the user
-  USER_ID=$($PSQL "INSERT INTO users(username) VALUES('$USERNAME')")
-  
-# else user in db
+  # Insert new user
+  USER_ID=$($PSQL "INSERT INTO users(username) VALUES('$USERNAME') RETURNING user_id")
 else
+  # Existing user - get game stats
   GAMES_PLAYED=$($PSQL "SELECT COUNT(*) FROM games WHERE user_id=$USER_ID")
   BEST_GAME=$($PSQL "SELECT MIN(guesses) FROM games WHERE user_id=$USER_ID")
   echo "Welcome back, $USERNAME! You have played $GAMES_PLAYED games, and your best game took $BEST_GAME guesses."
 fi
 
-# guessing game
+# Start the guessing game
 GUESS_COUNT=0
 CORRECT_GUESS=false
 
@@ -41,6 +41,7 @@ do
     echo "That is not an integer, guess again:"
     continue
   fi
+  
   ((GUESS_COUNT++))
   
   if [[ $GUESS -eq $SECRET_NUMBER ]]
@@ -56,3 +57,4 @@ do
     echo "It's higher than that, guess again:"
   fi
 done
+
