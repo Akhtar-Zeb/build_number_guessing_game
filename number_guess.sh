@@ -1,15 +1,14 @@
 #!/bin/bash
 PSQL="psql --username=freecodecamp --dbname=number_guess -t --no-align -c"
 
+SECRET_NUMBER=$(( RANDOM % 1000 + 1 ))
+echo $SECRET_NUMBER
 echo "Enter your username:"
 read USERNAME
 
-NAME=$($PSQL "SELECT name FROM users WHERE name = '$USERNAME'")
+USER_ID=$($PSQL "SELECT user_id FROM users WHERE username='$USERNAME'")
 
-if [[ -z $NAME ]]
+if [[ -z $USER_ID ]]
 then
-  INSERT_NAME=$($PSQL "INSERT INTO users(name) VALUES('$USERNAME')")
-  echo "$USERNAME inserted into users"
-else
-  echo "Welcom back, $NAME! You have played 
+  echo "Welcome, $USERNAME! It looks like this is your first time here."
 fi
